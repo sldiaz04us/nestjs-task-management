@@ -4,6 +4,7 @@ import {
     Delete,
     Get,
     Param,
+    ParseIntPipe,
     Patch,
     Post,
     Query,
@@ -13,9 +14,9 @@ import {
 
 import { TasksService } from './tasks.service';
 import { CreateTaskDto } from './dto/create-task.dto';
-import { TaskStatus } from './tasks.model';
 import { GetTasksFilterDto } from './dto/get-tasks-filter.dto';
 import { TaskStatusValidationPipe } from './pipes/task-status-validation.pipe';
+import { TaskStatus } from './task.status.enum';
 
 @Controller('tasks')
 export class TasksController {
@@ -23,14 +24,11 @@ export class TasksController {
 
     @Get()
     getTasks(@Query(ValidationPipe) filterDto: GetTasksFilterDto) {
-        if (Object.keys(filterDto).length) {
-            return this.tasksService.getTasksWithFilters(filterDto);
-        }
-        return this.tasksService.getAllTasks();
+        return this.tasksService.getTasks(filterDto);
     }
 
     @Get(':id')
-    getTaskById(@Param('id') id: string) {
+    getTaskById(@Param('id', ParseIntPipe) id: number) {
         return this.tasksService.getTaskById(id);
     }
 
@@ -38,36 +36,20 @@ export class TasksController {
     @Post()
     @UsePipes(ValidationPipe)
     createTask(@Body() createTaskDto: CreateTaskDto) {
-        return this.tasksService
-            .createTask(createTaskDto);
+        return this.tasksService.createTask(createTaskDto);
     }
 
     @Patch(':id/status')
     updateTaskStatusById(
-        @Param('id') id: string,
+        @Param('id', ParseIntPipe) id: number,
         @Body('status', TaskStatusValidationPipe) status: TaskStatus
     ) {
         return this.tasksService.updateTaskStatusById(id, status);
     }
 
     @Delete(':id')
-    deleteTaskById(@Param('id') id: string) {
-        this.tasksService.deleteTaskById(id);
+    deleteTaskById(@Param('id', ParseIntPipe) id: number) {
+        return this.tasksService.deleteTaskById(id);
     }
-
-    /** Getting the entire body of the request */
-    // @Post()
-    // createTask(@Body() body) {
-    //     console.log('body :>> ', body);
-    // }
-
-    /** Getting specific parameters of the request */
-    // @Post()
-    // createTask(
-    //     @Body('title') title: string,
-    //     @Body('description') description: string
-    // ) {
-    //     console.log(title, description);
-    // }
 
 }
